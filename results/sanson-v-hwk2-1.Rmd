@@ -3,27 +3,36 @@ title: "sanson-v-hwk2-1"
 output: pdf_document
 date: "2023-02-06"
 ---
+---
+title: "ECON 470 Homework 2"
+author: "Virginia Sanson"
+output: pdf_document
+date: "2023-02-11"
+---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+load("Hwk2_workspace.Rdata")
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, scales,
+               kableExtra)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+\vspace{.2in}
+\noindent Question 1
+```{echo=F, eval=T}
 
-```{r cars}
-summary(cars)
+print(graph1)
+
 ```
+\vspace{.2in}
+\noindent Question 2
+The total number of unique hospital IDs in the dataset is `r unique_provider_numbers`. 
 
-## Including Plots
 
-You can also embed plots, for example:
+\vspace{.2in}
+\noindent Question 3
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
