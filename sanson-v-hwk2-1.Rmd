@@ -1,0 +1,74 @@
+---
+title: "sanson-v-hwk2-1"
+output: pdf_document
+date: "2023-02-06"
+---
+---
+title: "ECON 470 Homework 2"
+author: "Virginia Sanson"
+output: pdf_document
+date: "2023-02-11"
+---
+
+```{r setup, include=FALSE}
+load("Hwk2_workspace.Rdata")
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, scales,
+               kableExtra)
+```
+
+\vspace{.2in}
+\noindent Question 1
+
+2,114 hospitals filed more than one report in the same year, from 1997 to 2018. 
+
+```{r graph1, echo=F}
+
+print(graph1)
+
+```
+\vspace{.2in}
+\noindent Question 2
+
+The total number of unique hospital IDs in the dataset is `r unique_provider_numbers`. 
+
+
+\vspace{1.5in}
+\noindent Question 3
+
+```{r graph2, echo=F}
+
+print(graph2)
+
+```
+
+\noindent Question 4
+```{r graph3, echo=F}
+
+print(graph3)
+
+```
+
+\vspace{.2in}
+\noindent Question 5
+```{r table5, echo=F}
+
+print(table5)
+
+```
+
+\vspace{.2in}
+\noindent Question 6
+
+```{r table6, echo=F}
+
+print(table6)
+
+```
+
+\vspace{.2in}
+\noindent Question 7
+
+
+
