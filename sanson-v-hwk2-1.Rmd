@@ -71,4 +71,21 @@ print(table6)
 \noindent Question 7
 
 
+While I understand that parts 1-4 of this question pertain to the slides/lecture, of which I understand the concepts, I could not understand how to code the ATEs and then organize them into a table. I hope to learn more in class Monday. I attempted to use the equations for the inverse variance and Mahalanobis distances, but the code only returned errors. 
+
+\vspace{.2in}
+\noindent Question 8
+
+This answer will depend on the answers to Question 7, but I believe the results will return as similar but not identical. 
+
+\vspace{.2in}
+\noindent Question 9
+Again, this answer will depend on the previous questions' answers, but I predict that we cannot be estimating a causal effect of the penalty, and more of a correlation instead.
+
+\vspace{.2in}
+\noindent Question 10
+My experience working with this data set was a lot better than last homework's.I learned how to create a violin plot in R; my previous work with violin plots was very basic ones in Python instead. However, I still wish I could make it a more aesthetically pleasing graph with graphics on density. Question 7 aggravated me a bit as I could not understand how to properly code what to do to answer the question, so there was a knowledge gap of what I wanted to do and what I could. 
+
+
+
 
