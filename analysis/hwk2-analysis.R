@@ -1,26 +1,23 @@
-
-
 #question1
 
-reports_per_year <- final.hcris.data%>% 
-  group_by(street, year) %>%
+reports_per_year <- final.hcris%>% 
+  group_by(provider_number, fyear) %>%
   summarise(n = n())
 multiple_reports_per_year <- reports_per_year %>%
   filter(n>1)
-n_multiple_reports_per_year <- n_distinct(multiple_reports_per_year$street)
-n_multiple_reports_per_year
 
-
-q1 <- multiple_reports_per_year%>% group_by(year)%>% 
+hospitals <- multiple_reports_per_year%>% group_by(fyear)%>% 
   summarize(count = n())
-  sum(a$count)
-  
-graph1 <- ggplot(a, aes(year, count))+
-  geom_line()+
-  labs( title = "Hospitals with 2+ Filed Reports in One Year", x = 'Year', y = 'Number of Hospitals')+
-  theme_minimal()
+sum(graph_1$count)
+
+
+graph1<-ggplot(hospitals, aes(fyear, count))+
+  geom_line() +
+  labs(title = "Hospitals with 2+ Filed Reports in One Year", x = "Year", y = "Number of Hospitals")+
+  theme_bw()
 
 graph1
+
 save.image("Hwk2_workspace.Rdata")
 
 #question2
@@ -53,28 +50,26 @@ graph3
 save.image("Hwk2_workspace.Rdata")
 
 #question5
+obs_2012 <- final.hcris.data%>% filter(year == 2012)
+
+obs_2012$penalty <- ifelse(obs_2012$hvbp_payment + obs_2012$hrrp_payment < 0, 1,0)
+
+obs_2012["hvbp_payment"][is.na(obs_2012["hvbp_payment"])] <- 0
+obs_2012["hrrp_payment"][is.na(obs_2012["hrrp_payment"])] <- 0
 
 obs_2012 <- obs_2012 %>% 
   filter(!is.na(penalty))%>% 
-  filter(!is.na(price))
+  filter(!is.na(price)) %>% filter(price >0 && penalty < 100000)
 
-obs_2012 <- final.hcris.data%>% filter(year == 2012)
+table_5 <- obs_2012 %>% filter(!is.na(penalty)) %>%
+  group_by(penalty)%>% 
+  summarize(price = mean(price, na.rm = TRUE))
 
-obs_2012$penalty <- ifelse(obs_2012$hvbp_payment + obs_2012$hrrp_payment < 0, 1, 0 )
-  
-table5<- obs_2012%>% filter(! is.na(penalty))%>%
-  group_by(penalty)%>%
-  summarize(price = mean(price, na.rm= TRUE))
-
-table5
+table_5
 
 save.image("Hwk2_workspace.Rdata")
 
 #question6
-
-obs_2012 <- obs_2012 %>% 
-  filter(!is.na(penalty))%>% 
-  filter(!is.na(price))
 
 obs_2012$quartile <- ntile(obs_2012$beds, 4) 
 
@@ -83,7 +78,7 @@ obs_2012$quartile_2 <- ifelse(obs_2012$quartile == 2, 1,0)
 obs_2012$quartile_3 <- ifelse(obs_2012$quartile == 3, 1,0)
 obs_2012$quartile_4 <- ifelse(obs_2012$quartile == 4, 1,0)
 
-table_6 <- obs_2012 %>% group_by(quartile, penalty)%>% summarize(avg_price = mean(price, na.rm = TRUE))
+table_6 <- obs_2012 %>% group_by(penalty, quartile)%>% summarize(avg_price = mean(price, na.rm = TRUE))
 
 table_6
 
@@ -100,7 +95,7 @@ inv_var <- Matching::Match(Y=obs_2012$price,
 summary(inv_var)
 save.image("Hwk2_workspace.Rdata")
 
-#lm(formula = y ~ d, data = select.dat)
+
 
 #part2
 maha <- Matching::Match(Y=obs_2012$price,
@@ -110,62 +105,48 @@ maha <- Matching::Match(Y=obs_2012$price,
                         Weight=2,
                         estimand="ATE")
 summary(maha)
+save.image("Hwk2_workspace.Rdata")
 
 #part3
-logit.model <- glm(penalty ~ beds,
-                   family=binomial,
-                   data=obs_2012_f)
+logit.model <- glm(penalty ~ quartile_1 + quartile_2 + quartile_3 + quartile_4,
+                 data = obs_2012, family = binomial)
 
-ps <- fitted(logit.model)
-
-
+obs_2012 <- add_predictions(obs_2012, logit.model, 'ps', type = "response") %>%
+  filter(ps>0 & ps<1 )
+ 
 obs_2012 <- obs_2012 %>%
-  mutate(ipw = case_when(
-    penalty== 1 ~ 1/ps,
-    penalty== 0 ~ 1/(1-ps),
-    TRUE ~ NA_real_
-  ))
-
-logit.reg <- glm(penalty ~ obs_2012_f$quartile_1 + obs_2012_f$quartile_2 + 
-                   obs_2012_f$quartile_3 + obs_2012_f$quartile_4,
-                 data = final.hcris.data, family = binomial)
-final.hcris.data <- final.hcris.data %>%
-  mutate(ps = predict(logit.reg, type = 'response')) %>%
-  filter(ps>0 & ps<1)
-
-# Create IPW weights
-final.hcris.data <- final.hcris.data %>%
   mutate(ipw = case_when(
     penalty == 1 ~ 1/ps,
     penalty == 0 ~ 1/(1-ps),
-    TRUE~NA_real_
-  ))
-view(final.hcris.data)
+    TRUE~NA_real_ ))
 
-mean.t1 <- final.hcris.data %>% 
+mean.t1 <- obs_2012 %>% 
   filter(penalty==1) %>% 
   dplyr::select(price, ipw) %>%
   summarize(mean_y=weighted.mean(price, w=ipw))
-mean.t0 <- final.hcris.data %>% 
+mean.t0 <- obs_2012 %>% 
   filter(penalty==0) %>% 
   dplyr::select(price, ipw) %>%
   summarize(mean_y=weighted.mean(price, w=ipw))
+
 mean.t1$mean_y - mean.t0$mean_y
-reg.ipw <- lm(price ~ penalty, data=final.hcris.data, weights=ipw)
+reg.ipw <- lm(price ~ penalty, data=obs_2012, weights=ipw)
+
 reg.ipw
+save.image("Hwk2_workspace.Rdata")
 
 #part4
 
-obs_2012 <- obs_2012%>% filter(penalty==1)
-reg1 <- lm(price ~ beds+ mcaid_discharges + ip_charges + mcare_discharges +
-             tot_mcare_payment, data=reg1.dat)
-reg0.dat <- lp.vars %>% filter(penalty==0
-reg0 <- lm(price ~ beds + mcaid_discharges + ip_charges + mcare_discharges +
-             tot_mcare_payment, data=reg0.dat)
-pred1 <- predict(reg1,new=lp.vars)
-pred0 <- predict(reg0,new=lp.vars)
-mean(pred1-pred0)
+reg1.dat <- obs_2012 %>% filter(penalty==1)
+reg1 <- lm(price ~ penalty, data=reg1.dat)
+reg0.dat <- obs_2012 %>% filter(penalty==0)
+reg0 <- lm(price ~ penalty, data=reg0.dat)
+pred1_alt <- predict(reg1,new=obs_2012)
+pred0_alt <- predict(reg0,new=obs_2012)
 
+mean(pred1_alt-pred0_alt)
+
+save.image("Hwk2_workspace.Rdata")
 
 
 
