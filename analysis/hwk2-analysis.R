@@ -59,8 +59,9 @@ obs_2012["hrrp_payment"][is.na(obs_2012["hrrp_payment"])] <- 0
 
 obs_2012 <- obs_2012 %>% 
   filter(!is.na(penalty))%>% 
-  filter(!is.na(price)) %>% filter(price >0 && penalty < 100000)
-
+  filter(!is.na(price)) %>% 
+  filter(price_num >0 && price < 100000) 
+  
 table_5 <- obs_2012 %>% filter(!is.na(penalty)) %>%
   group_by(penalty)%>% 
   summarize(price = mean(price, na.rm = TRUE))
@@ -138,39 +139,30 @@ save.image("Hwk2_workspace.Rdata")
 #part4
 
 reg1.dat <- obs_2012 %>% filter(penalty==1)
-reg1 <- lm(price ~ penalty, data=reg1.dat)
+reg1 <- lm(price ~ quartile_1+ quartile_2+ quartile_3 + quartile_4, data=reg1.dat)
 reg0.dat <- obs_2012 %>% filter(penalty==0)
-reg0 <- lm(price ~ penalty, data=reg0.dat)
+reg0 <- lm(price ~ quartile_1+ quartile_2+ quartile_3 + quartile_4, data=reg0.dat)
 pred1_alt <- predict(reg1,new=obs_2012)
 pred0_alt <- predict(reg0,new=obs_2012)
-
 mean(pred1_alt-pred0_alt)
+linreg <- mean(pred1_alt-pred0_alt)
 
+linreg
+save.image("Hwk2_workspace.Rdata")
+
+
+#altogethernow
+
+finaltable <- data.frame("Inverse Variance" = inv_var$est,
+                           "Mahalanobis"=maha$est, 
+                           "Inverse Propensity Weight"=reg.ipw$coefficients['penalty'],
+                         "Simple Regression Result"= linreg)
+finaltable
 save.image("Hwk2_workspace.Rdata")
 
 
 
 
-
-
-
-
-
-
-
-
-
-#ian q5
-yr_2012 <- final.hcris.data %>% filter(year==2012) %>% ungroup() %>%
-  mutate(beds_q1 = quantile(beds, probs=0.25, na.rm=TRUE),
-         beds_q2 = quantile(beds, probs=0.50, na.rm=TRUE),
-         beds_q3 = quantile(beds, probs= 0.75, na.rm= TRUE), 
-         beds_q4 = max(beds, na.rm = TRUE)) %>%
-  mutate(bed_size1 = ifelse(beds<beds_q1, 1,0 ),
-         bed_size2 = ifelse(beds>= beds_q1 & beds<beds_q2, 1,0),
-         bed_size3 = ifelse(beds>= beds_q2 & beds<beds_q3, 1,0),
-         bed_size4 = ifelse(beds>  beds_q3 & beds<beds_q4, 1,0))
-         
 
   
 
